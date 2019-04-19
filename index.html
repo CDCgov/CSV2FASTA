@@ -72,6 +72,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.6.3/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <script src="https://unpkg.com/streamsaver"></script>
     <script>
       $(function(){
@@ -89,6 +90,8 @@
           });
         });
 
+        var format = 'YYYY-MM-DD';
+
         $('#downloadFASTA').on('click', function(){
           var file = $('#customFile').get(0).files[0];
           var name = file.name.split('.').slice(0,-1).join('.');
@@ -102,7 +105,8 @@
             header: true,
             step: function(result){
               var row = result.data[0];
-              writer.write(encoder.encode(`>${row[idCol] + (dateCol ? '_' + row[dateCol] : '')}\n${row[seqCol]}\n`));
+              if(row[idCol] === '' || typeof row[seqCol] === 'undefined') return;
+              writer.write(encoder.encode(`>${row[idCol] + (dateCol ? '_' + moment(row[dateCol]).format(format) : '')}\r\n${row[seqCol]}\r\n`));
             },
             complete: function(){
               writer.close();
@@ -124,7 +128,8 @@
             header: true,
             step: function(result){
               var row = result.data[0];
-              writer.write(encoder.encode(`#${row[idCol] + (dateCol ? '_' + row[dateCol] : '')}\n${row[seqCol]}\n`));
+              if(row[idCol] === '' || typeof row[seqCol] === 'undefined') return;
+              writer.write(encoder.encode(`#${row[idCol] + (dateCol ? '_' + moment(row[dateCol]).format(format) : '')}\r\n${row[seqCol]}\r\n`));
             },
             complete: function(){
               writer.close();
