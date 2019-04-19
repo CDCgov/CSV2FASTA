@@ -24,13 +24,30 @@
           </div>
         </div>
         <div class="row">
-          <div class="form-group col">
+          <div class="form-group col-6">
             <label for="idCol">ID Column</label>
             <select class="form-control" id="idCol" disabled></select>
           </div>
-          <div class="form-group col">
+          <div class="form-group col-6">
             <label for="seqCol">Sequence Column</label>
             <select class="form-control" id="seqCol" disabled></select>
+          </div>
+        </div>
+        <div class="accordion mb-3" id="accordionExample">
+          <div class="card">
+            <div class="card-header" id="headingOne">
+              <h5 class="mb-0">
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Advanced</button>
+              </h5>
+            </div>
+            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+              <div class="card-body">
+                <div class="form-group col-6">
+                  <label for="seqCol">Date Column (for <a href="http://beast.community/" target="_blank">BEAST</a>)</label>
+                  <select class="form-control" id="dateCol" disabled><option selected disabled></option></select>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="row" id="downloads">
@@ -55,41 +72,64 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.6.3/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+    <script src="https://unpkg.com/streamsaver"></script>
     <script>
-      var data = [];
       $(function(){
         $('#customFile').on('change', function(e){
-          let file = e.target.files[0];
+          var file = $('#customFile').get(0).files[0];
           $('label[for="customFile"]').text(file.name);
+          $('#downloads').slideDown();
           Papa.parse(file, {
             header: true,
+            preview: 1,
             complete: function(result){
-              $('#downloads').slideDown();
-              data = result.data;
-              $('select').html(result.meta.fields.map(f => `<option>${f}</option>`).join('')).prop('disabled', false);
+              $('#idCol, #seqCol').html(result.meta.fields.map(f => `<option>${f}</option>`).join('\n')).prop('disabled', false);
+              $('#dateCol').html('<option selected disabled></option>\n'+result.meta.fields.map(f => `<option>${f}</option>`).join('\n')).prop('disabled', false);
             }
           });
         });
 
         $('#downloadFASTA').on('click', function(){
-          var name = $('#customFile').get(0).files[0].name.split('.').slice(0,-1).join('.');
-          var fasta = '';
+          var file = $('#customFile').get(0).files[0];
+          var name = file.name.split('.').slice(0,-1).join('.');
+          var fileStream = streamSaver.createWriteStream(name + '.fasta');
+          var writer = fileStream.getWriter();
+          var encoder = new TextEncoder();
           var seqCol = $('#seqCol').val();
           var idCol = $('#idCol').val();
-          data.forEach(row => fasta += `>${row[idCol]}\n${row[seqCol]}\n`);
-          var blob = new Blob([fasta], {type: 'text/plain;charset=utf-8'});
-          saveAs(blob, name + '.fasta');
+          var dateCol = $('#dateCol').val();
+          Papa.parse(file, {
+            header: true,
+            step: function(result){
+              var row = result.data[0];
+              writer.write(encoder.encode(`>${row[idCol] + (dateCol ? '_' + row[dateCol] : '')}\n${row[seqCol]}\n`));
+            },
+            complete: function(){
+              writer.close();
+            }
+          });
         });
 
         $('#downloadMEGA').on('click', function(){
-          var name = $('#customFile').get(0).files[0].name.split('.').slice(0,-1).join('.');
+          var file = $('#customFile').get(0).files[0];
+          var name = file.name.split('.').slice(0,-1).join('.');
+          var fileStream = streamSaver.createWriteStream(name + '.mega');
+          var writer = fileStream.getWriter();
+          var encoder = new TextEncoder();
+          writer.write(encoder.encode('#mega\nTITLE: '+name+'\n'));
           var seqCol = $('#seqCol').val();
           var idCol = $('#idCol').val();
-          var mega = '#mega\nTITLE: '+name+'\n';
-          data.forEach(row => mega += `#${row[idCol]}\n${row[seqCol]}\n`);
-          var blob = new Blob([mega], {type: 'text/plain;charset=utf-8'});
-          saveAs(blob, name + '.mega');
+          var dateCol = $('#dateCol').val();
+          Papa.parse(file, {
+            header: true,
+            step: function(result){
+              var row = result.data[0];
+              writer.write(encoder.encode(`#${row[idCol] + (dateCol ? '_' + row[dateCol] : '')}\n${row[seqCol]}\n`));
+            },
+            complete: function(){
+              writer.close();
+            }
+          });
         });
       });
     </script>
