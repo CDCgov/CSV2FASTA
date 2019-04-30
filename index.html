@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="Tony Boyles <nsp3@cdc.gov>">
-    <title>CSV2FASTA</title>
+    <title>CSV⬌FASTA</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" />
     <link href="custom.css" rel="stylesheet" />
   </head>
@@ -14,53 +14,79 @@
     <div class="container" style="max-width: 540px;">
       <main role="main" class="col">
         <div class="text-center mt-3 mb-3">
-          <h1 class="h1">CSV2FASTA</h1>
+          <h1 class="h1">CSV⬌FASTA</h1>
         </div>
         <div class="form-group">
-          <div class="mb-2">CSV File</div>
+          <div class="mb-2">Input File</div>
           <div class="custom-file">
             <input type="file" class="custom-file-input" id="customFile">
             <label class="custom-file-label" for="customFile">Choose file</label>
           </div>
         </div>
-        <div class="row">
-          <div class="form-group col-6">
-            <label for="idCol">ID Column</label>
-            <select class="form-control" id="idCol" disabled></select>
-          </div>
-          <div class="form-group col-6">
-            <label for="seqCol">Sequence Column</label>
-            <select class="form-control" id="seqCol" disabled></select>
-          </div>
-        </div>
-        <div class="accordion mb-3" id="accordionExample">
-          <div class="card">
-            <div class="card-header" id="headingOne">
-              <h5 class="mb-0">
-                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Advanced</button>
-              </h5>
+        <div id="CSVControls">
+          <div class="row">
+            <div class="form-group col-6">
+              <label for="idCol">ID Column</label>
+              <select class="form-control" id="idCol" disabled></select>
             </div>
-            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
-              <div class="card-body">
-                <div class="form-group col-6">
-                  <label for="seqCol">Date Column (for <a href="http://beast.community/" target="_blank">BEAST</a>)</label>
-                  <select class="form-control" id="dateCol" disabled><option selected disabled></option></select>
+            <div class="form-group col-6">
+              <label for="seqCol">Sequence Column</label>
+              <select class="form-control" id="seqCol" disabled></select>
+            </div>
+          </div>
+          <div class="accordion mb-3" id="advanced">
+            <div class="card">
+              <div class="card-header" id="advancedHeading">
+                <h5 class="mb-0">
+                  <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Advanced</button>
+                </h5>
+              </div>
+              <div id="collapseOne" class="collapse" aria-labelledby="advancedHeading" data-parent="#advanced">
+                <div class="card-body">
+                  <div class="form-group col-6">
+                    <label for="seqCol">Date Column (for <a href="http://beast.community/" target="_blank">BEAST</a>)</label>
+                    <select class="form-control" id="dateCol" disabled><option selected disabled></option></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="mb-2">Downloads</div>
+            </div>
+            <div class="col-12">
+              <div class="row">
+                <div class="col">
+                  <button type="button" id="downloadFASTA" class="btn btn-primary w-100">Download FASTA</button>
+                </div>
+                <div class="col">
+                  <button type="button" id="downloadMEGA" class="btn btn-primary w-100">Download MEGA</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="row" id="downloads">
-          <div class="col-12">
-            <div class="mb-2">Downloads</div>
+        <div id="FASTAControls">
+          <div class="row">
+            <div class="form-group col-6">
+              <label for="idCol">ID Column</label>
+              <input class="form-control" id="FASTAidCol" value="id"></input>
+            </div>
+            <div class="form-group col-6">
+              <label for="seqCol">Sequence Column</label>
+              <input class="form-control" id="FASTAseqCol" value="seq"></input>
+            </div>
           </div>
-          <div class="col-12">
-            <div class="row">
-              <div class="col">
-                <button type="button" id="downloadFASTA" class="btn btn-primary w-100">Download FASTA</button>
-              </div>
-              <div class="col">
-                <button type="button" id="downloadMEGA" class="btn btn-primary w-100">Download MEGA</button>
+          <div class="row">
+            <div class="col-12">
+              <div class="mb-2">Downloads</div>
+            </div>
+            <div class="col-12">
+              <div class="row">
+                <div class="col">
+                  <button type="button" id="downloadCSV" class="btn btn-primary w-100">Download CSV</button>
+                </div>
               </div>
             </div>
           </div>
@@ -79,15 +105,22 @@
         $('#customFile').on('change', function(e){
           var file = $('#customFile').get(0).files[0];
           $('label[for="customFile"]').text(file.name);
-          $('#downloads').slideDown();
-          Papa.parse(file, {
-            header: true,
-            preview: 1,
-            complete: function(result){
-              $('#idCol, #seqCol').html(result.meta.fields.map(f => `<option>${f}</option>`).join('\n')).prop('disabled', false);
-              $('#dateCol').html('<option selected disabled></option>\n'+result.meta.fields.map(f => `<option>${f}</option>`).join('\n')).prop('disabled', false);
-            }
-          });
+          var fileType = file.name.split('.').pop().toLowerCase();
+          if(fileType === 'csv'){
+            $('#FASTAControls').slideUp();
+            $('#CSVControls').slideDown();
+            Papa.parse(file, {
+              header: true,
+              preview: 1,
+              complete: function(result){
+                $('#idCol, #seqCol').html(result.meta.fields.map(f => `<option>${f}</option>`).join('\n')).prop('disabled', false);
+                $('#dateCol').html('<option selected disabled></option>\n'+result.meta.fields.map(f => `<option>${f}</option>`).join('\n')).prop('disabled', false);
+              }
+            });
+          } else { //i.e., is a FASTA File
+            $('#CSVControls').slideUp();
+            $('#FASTAControls').slideDown();
+          }
         });
 
         var format = 'YYYY-MM-DD';
@@ -135,6 +168,39 @@
               writer.close();
             }
           });
+        });
+
+        $('#downloadCSV').on('click', function(){
+          var file = $('#customFile').get(0).files[0];
+          var name = file.name.split('.').slice(0,-1).join('.');
+          var fileStream = streamSaver.createWriteStream(name + '.csv');
+          var reader = new FileReader();
+          reader.onload = function(e){
+            var writer = fileStream.getWriter();
+            var encoder = new TextEncoder();
+            writer.write(encoder.encode($('#FASTAidCol').val() + ',' + $('#FASTAseqCol').val() + '\r\n'));
+            var text = e.target.result;
+            if(!text || text.length === 0){
+              writer.close();
+              return;
+            }
+            var currentSeq = {};
+            text.split(/[\r\n]+/g).forEach(function(line, i){
+              if(/^\s*$/.test(line)) return;
+              if(line[0] === '>' || line[0] === ';'){
+                if(i > 0) writer.write(encoder.encode(currentSeq.id + ',' + currentSeq.seq + '\r\n'));
+                currentSeq = {
+                  id: line.slice(1),
+                  seq: ''
+                };
+              } else {
+                currentSeq.seq += line;
+              }
+            });
+            writer.write(encoder.encode(currentSeq.id + ',' + currentSeq.seq + '\r\n'));
+            writer.close();
+          };
+          reader.readAsText(file);
         });
       });
     </script>

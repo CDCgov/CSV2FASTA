@@ -1,20 +1,19 @@
 {
   "name": "csv2fasta",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "1.1.0",
+  "description": "A little web tool to help people translate CSVs to FASTA and vice-versa.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "npx http-server"
+    "start": "npx http-server"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AABoyles/CSV2FASTA.git"
+    "url": "git+https://github.com/CDCgov/CSV2FASTA.git"
   },
-  "author": "",
+  "author": "Tony Boyles <nsp3@cdc.gov>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/AABoyles/CSV2FASTA/issues"
+    "url": "https://github.com/CDCgov/CSV2FASTA/issues"
   },
-  "homepage": "https://github.com/AABoyles/CSV2FASTA#readme"
+  "homepage": "https://github.com/CDCgov/CSV2FASTA#csv2fasta"
 }

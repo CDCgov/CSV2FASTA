@@ -11,6 +11,10 @@ body {
   background-color: #f9f9f9;
 }
 
+#CSVControls, #FASTAControls {
+  display: none;
+}
+
 .accordion>.card .card-header {
   margin-bottom: 0px;
 }
@@ -19,8 +23,4 @@ body {
   border-bottom: 1px solid rgba(0,0,0,.125);;
   border-bottom-right-radius: .25rem;
   border-bottom-left-radius: .25rem;
-}
-
-#downloads{
-  display: none;
 }
