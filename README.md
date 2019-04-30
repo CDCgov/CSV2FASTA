@@ -1,6 +1,8 @@
-# CSV⬌FASTA
+# [CSV⬌FASTA](https://cdcgov.github.io/CSV2FASTA)
 
 A little web tool to help people translate CSVs to FASTA and vice-versa.
+
+[Click Here to Launch!](https://cdcgov.github.io/CSV2FASTA)
 
 This repository was created for use by CDC programs to collaborate on public health surveillance related projects in support of the CDC Surveillance Strategy.  Github is not hosted by the CDC, but is used by CDC and its partners to share information and collaborate on software.
 
